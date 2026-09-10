@@ -10,20 +10,20 @@ class FileRenamer (General):
 		self.loadConfigs()
 
 
-	def loadConfigs (self):
+	def loadConfigs(self):
 		fileList = os.listdir("./configs/")
 
 		if len(fileList) == 0:
 			return [False, "There are no configurations to work with!"]
 
 		for configFile in fileList:
-			config = self.load_json("./configs/" + configFile)
+			config = self.load_json(f"./configs/{configFile}")
 			self.configs.append(config)
 
-	def prepareRenameList (self, configName):
+	def prepareRenameList(self, configName):
 		for config in self.configs:
 			# print(configName)
-			if not (config["name"] == configName):
+			if config["name"] != configName:
 				continue
 
 			if not os.path.isdir(config["folder"]):
@@ -55,21 +55,21 @@ class FileRenamer (General):
 
 				if not config["ignoreCase"] and config["nameCriteria"] not in file and not config["nameCriteriaRegex"]:
 					continue
-				
+
 				if config["ignoreCase"] and not self.searchString(file, config["nameCriteria"], ignoreCase = True):
 					continue
-				
-				if not self.searchString(file, "^%s" % config["prefix"]):
+
+				if not self.searchString(file, f'^{config["prefix"]}'):
 					continue
-				
-				if not self.searchString(file, "%s$" % config["extension"]):
+
+				if not self.searchString(file, f'{config["extension"]}$'):
 					continue
-				
+
 				if config["matchSeason"]:
 					seasonNumber = self.searchString(file, config["seasonCriteria"])
 					if not seasonNumber:
 						continue
-					
+
 					# seasonNumber = self.searchString(seasonNumber, "(\\d+)")
 					seasonNumber = seasonNumber[1]
 
@@ -89,10 +89,6 @@ class FileRenamer (General):
 						ext = config["extension"]
 					)
 
-					if config["newExtension"]:
-						newName += config["newExtension"]
-					else:
-						newName += config["extension"]
 				else:
 
 					newName = "{nl}{el}{en}{ext}".format(
@@ -102,11 +98,7 @@ class FileRenamer (General):
 						ext = config["extension"]
 					)
 
-					if config["newExtension"]:
-						newName += config["newExtension"]
-					else:
-						newName += config["extension"]
-
+				newName += config["newExtension"] or config["extension"]
 				if config["renameSafely"]:
 					safetyFolder = os.path.join(config["destination"], "safety-folder")
 					newFilePath = os.path.join(safetyFolder, os.path.basename(newName))
@@ -125,24 +117,24 @@ class FileRenamer (General):
 			
 			return self.prepareRenameList(config)
 
-	def getRenameListAll (self):
+	def getRenameListAll(self):
 		if len(self.configs) == 0:
 			return [False, "No config file available!"]
 
-		retList = []
-		for config in self.configs:
-			retList.append(self.prepareRenameList(config["name"])["retList"])
+		return [
+		    self.prepareRenameList(config["name"])["retList"]
+		    for config in self.configs
+		]
 
-		return retList
-
-	def finalize (self, array):
+	def finalize(self, array):
 		renameSafely = False
 		# print(array[0][1])
 		# return False
-		if os.path.basename(os.path.dirname(array[0][1])) == "safety-folder":
-			if not os.path.isdir(os.path.dirname(array[0][1])):
-				renameSafely = True
-				os.mkdir(os.path.dirname(array[0][1]))
+		if os.path.basename(os.path.dirname(
+		    array[0][1])) == "safety-folder" and not os.path.isdir(
+		        os.path.dirname(array[0][1])):
+			renameSafely = True
+			os.mkdir(os.path.dirname(array[0][1]))
 
 		for [old, new] in array:
 			if renameSafely:

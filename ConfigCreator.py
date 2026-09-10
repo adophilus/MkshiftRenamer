@@ -71,14 +71,14 @@ class ConfigCreator (General):
 			}
 		];
 
-	def askQuestion (self, id, saveData = {}):
+	def askQuestion(self, id, saveData = {}):
 		for questionGroup in self.questions:
 			if not questionGroup["id"] == id:
 				continue;
-			
+
 			userInput = input(questionGroup["question"] + "  ");
 
-			if id == "src" or id == "dest":
+			if id in ["src", "dest"]:
 				if not os.path.isdir(userInput):
 					if id == "src":
 						print("Invalid source folder!");
@@ -101,7 +101,7 @@ class ConfigCreator (General):
 				else:
 					saveData[questionGroup["key"]] = userInput;
 			elif id == "regexInSearchC":
-				if userInput == "" or userInput == "n":
+				if userInput in ["", "n"]:
 					saveData[questionGroup["key"]] = False;
 				elif userInput == "y":
 					saveData[questionGroup["key"]] = True;
@@ -109,7 +109,7 @@ class ConfigCreator (General):
 					print("Invalid entry!");
 					saveData = self.askQuestion("regexInSearchC", saveData);
 			elif id == "case":
-				if userInput == "" or userInput == "n":
+				if userInput in ["", "n"]:
 					saveData[questionGroup["key"]] = False;
 				elif userInput == "y":
 					saveData[questionGroup["key"]] = True;
@@ -163,7 +163,7 @@ class ConfigCreator (General):
 					saveData[questionGroup["key"]] = userInput;
 			else:
 				print("Invalid question id!");
-			
+
 			return saveData;
 
 	def askUserInput (self):
@@ -173,10 +173,10 @@ class ConfigCreator (General):
 		
 		return saveData;
 
-	def confirmSaveConfigFile (self, saveData):
+	def confirmSaveConfigFile(self, saveData):
 		print("\n%s" % self.unjsonize(saveData));
 		userInput = input("\nAre you sure you want to save this config? (y/n)  ");
-		if userInput == "" or userInput == "n":
+		if userInput in ["", "n"]:
 			print("Exiting...");
 			self.wait(3);
 		elif userInput == "y":
@@ -186,7 +186,7 @@ class ConfigCreator (General):
 			saveData["seasonLeader"] = " season ";
 			saveData["episodeLeader"] = " episode ";
 
-			self.save_json("./configs/%s.json" % saveData["name"], saveData);
+			self.save_json(f'./configs/{saveData["name"]}.json', saveData);
 			self.wait(3);
 		else:
 			print("Invalid response!");
